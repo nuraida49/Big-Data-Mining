@@ -1,0 +1,32 @@
+ #library and code setup
+!apt-get update
+!apt-get install openjdk-8-jdk-headless -qq > /dev/null
+!pip install -q pyspark
+import pyspark, os
+from pyspark import SparkConf, SparkContext
+from pyspark.sql import *
+os.environ["PYSPARK_PYTHON"]="python3"
+os.environ["JAVA_HOME"]="/usr/lib/jvm/java-8-openjdk-amd64/"
+os.environ['PYTHONHASHSEED']="0"
+
+
+try:
+  conf = SparkConf().setMaster("local[*]").set("spark.executor.memory", "1g").set("spark.executorEnv.PYTHONHASHSEED","0").set("spark.ui.port", "4050")
+  sc = SparkContext(conf = conf)
+  spark = SparkSession.builder.getOrCreate()
+except ValueError:
+  #it's ok if the server is already started
+  pass
+
+def dbg(x):
+  """ A helper function to print debugging information on RDDs """
+  if isinstance(x, pyspark.RDD):
+    print([(t[0], list(t[1]) if 
+            isinstance(t[1], pyspark.resultiterable.ResultIterable) else t[1])
+           if isinstance(t, tuple) else t
+           for t in x.take(100)])
+  else:
+    print(x)
+
+!pip install gdelt
+!pip install newspaper3k
